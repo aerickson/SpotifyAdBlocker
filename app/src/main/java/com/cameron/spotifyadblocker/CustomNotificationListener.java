@@ -25,6 +25,7 @@ import java.util.TimerTask;
  * Created by Cameron on 6/7/2016.
  */
 // Note: Rename this class during debugging (Refactor->Rename for ease). Android caching may prevent the service from binding on a previously-tested device.
+// rename to CustomNotificationListener before committing for real
 public class CustomNotificationListener extends NotificationListenerService {
     private boolean muted;
     private int originalVolume;
@@ -81,22 +82,24 @@ public class CustomNotificationListener extends NotificationListenerService {
                     // Check if it is an ad
                     if (foundNotification) {
                         Bundle extras = notification.extras;
-                        String title = extras.getCharSequence(Notification.EXTRA_TITLE).toString();
-                        if (title != null) {
-                            Log.d("DEBUG", title);
-                            boolean isAdPlaying = blocklist.contains(title);
-                            String s = isAdPlaying? "Ad playing" : "Ad not playing";
-                            Log.d("DEBUG", s);
-                            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-                            if (isAdPlaying && !muted) {
-                                originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, zeroVolume, AudioManager.FLAG_SHOW_UI);
-                                muted = true;
-                            }
-                            else if (!isAdPlaying && muted) {
-                                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVolume, AudioManager.FLAG_SHOW_UI);
-                                muted = false;
-                            }
+                        String title = extras.getCharSequence(Notification.EXTRA_TITLE, "").toString();
+                        String text = extras.getCharSequence(Notification.EXTRA_TEXT, "").toString();
+                        Log.d("DEBUG", text);
+                        Log.d("DEBUG", title);
+//                            boolean isAdPlaying = blocklist.contains(title);
+//                        boolean isAdPlaying = !title.contains("-");
+                        boolean isAdPlaying = text.isEmpty();
+                        String s = isAdPlaying? "Ad playing" : "Ad not playing";
+                        Log.d("DEBUG", s);
+                        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                        if (isAdPlaying && !muted) {
+                            originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, zeroVolume, AudioManager.FLAG_SHOW_UI);
+                            muted = true;
+                        }
+                        else if (!isAdPlaying && muted) {
+                            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVolume, AudioManager.FLAG_SHOW_UI);
+                            muted = false;
                         }
                     }
                 }
@@ -106,7 +109,9 @@ public class CustomNotificationListener extends NotificationListenerService {
     }
 
     public static void killService() {
-        timer.cancel();
+        if(timer!=null) {
+            timer.cancel();
+        }
         running = false;
     }
 
