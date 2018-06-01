@@ -67,13 +67,13 @@ public class CustomNotificationListener extends NotificationListenerService {
                 Notification notification = new Notification();
                 boolean foundNotification = false;
                 if (notifications != null) {
-                    Log.d("DEBUG", "Checking notifications.");
+//                    Log.d("scheduleAtFixedRate", "Checking notifications.");
 
                     // Find which notification is Spotify
                     for (int i = 0; i < notifications.length; ++i) {
                         String name = notifications[i].getPackageName();
                         if (name.contains("spotify")) {
-                            Log.d("DEBUG", name);
+//                            Log.d("scheduleAtFixedRate", name);
                             notification = notifications[i].getNotification();
                             foundNotification = true;
                             break;
@@ -84,20 +84,24 @@ public class CustomNotificationListener extends NotificationListenerService {
                         Bundle extras = notification.extras;
                         String title = extras.getCharSequence(Notification.EXTRA_TITLE, "").toString();
                         String text = extras.getCharSequence(Notification.EXTRA_TEXT, "").toString();
-                        Log.d("DEBUG", text);
-                        Log.d("DEBUG", title);
+                        Log.d("scheduleAtFixedRate", text);
+                        Log.d("scheduleAtFixedRate", title);
 //                            boolean isAdPlaying = blocklist.contains(title);
 //                        boolean isAdPlaying = !title.contains("-");
                         boolean isAdPlaying = text.isEmpty();
                         String s = isAdPlaying? "Ad playing" : "Ad not playing";
-                        Log.d("DEBUG", s);
+                        Log.d("scheduleAtFixedRate", s);
                         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
                         if (isAdPlaying && !muted) {
+                            Log.i("scheduleAtFixedRate", "Ad detected, setting mute state.");
+                            Log.i("scheduleAtFixedRate", ("Track info: '" + text + "' '" + title + "'"));
                             originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
                             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, zeroVolume, AudioManager.FLAG_SHOW_UI);
                             muted = true;
                         }
                         else if (!isAdPlaying && muted) {
+                            Log.i("scheduleAtFixedRate", "Ad over, restoring volume.");
+                            Log.i("scheduleAtFixedRate", ("Track info: '" + text + "' '" + title + "'"));
                             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVolume, AudioManager.FLAG_SHOW_UI);
                             muted = false;
                         }
@@ -121,12 +125,12 @@ public class CustomNotificationListener extends NotificationListenerService {
 
     @Override
     public void onDestroy() {
-        Log.d("DEBUG", "Destroying Service");
+        Log.d("onDestroy", "Destroying Service");
         try {
             killService();
-            Log.d("DEBUG", "Timer canceled.");
+            Log.d("onDestroy", "Timer canceled.");
         } catch (NullPointerException ex) {
-            Log.w("WARN", "NullPointer encountered while cancelling timer.");
+            Log.w("onDestroy", "NullPointer encountered while cancelling timer.");
         }
     }
 
